@@ -6,6 +6,23 @@ if($redis) {
 
     if (!empty($server['keys'])) {
         $keys = $redis->keys($server['filter']);
+    } else if ($server['nodes']) {
+        $keys = array();
+
+        foreach ($redis as $client) {
+            $next = 0;
+
+            while (true) {
+                $r = $client->scan($next, 'MATCH', $server['filter'], 'COUNT', $server['scansize']);
+
+                $next = $r[0];
+                $keys = array_merge($keys, $r[1]);
+
+                if ($next == 0) {
+                    break;
+                }
+            }
+        }
     } else {
         $next = 0;
         $keys = array();

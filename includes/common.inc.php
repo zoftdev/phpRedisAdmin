@@ -114,6 +114,10 @@ if (!isset($server['serialization'])) {
 // Setup a connection to Redis.
 if(isset($server['scheme']) && $server['scheme'] === 'unix' && $server['path']) {
   $redis = new Predis\Client(array('scheme' => 'unix', 'path' => $server['path']));
+} else if(isset($server['scheme']) && $server['scheme'] === 'cluster' && $server['nodes']) {
+  $redis = new Predis\Client($server['nodes'], array('cluster' => 'redis'));
+  $server['db'] = 0;
+  $server['databases'] = 1;
 } else {
   $redis = !$server['port'] ? new Predis\Client($server['host']) : new Predis\Client('tcp://'.$server['host'].':'.$server['port']);
 }

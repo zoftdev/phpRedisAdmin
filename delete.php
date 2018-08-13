@@ -51,7 +51,15 @@ if (isset($_GET['key'])) {
 
 
 if (isset($_GET['tree'])) {
-  $keys = $redis->keys($_GET['tree'].'*');
+  if ($server['nodes']) {
+    $keys = array();
+    foreach ($redis as $client) {
+      $r = $client->keys($_GET['tree'].'*');
+      $keys = array_merge($keys, $r);
+    }
+  } else {
+    $keys = $redis->keys($_GET['tree'].'*');
+  }
 
   foreach ($keys as $key) {
     $redis->del($key);

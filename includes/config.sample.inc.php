@@ -10,6 +10,7 @@ $config = array(
       'filter' => '*',
       'scheme' => 'tcp', // Optional. Connection scheme. 'tcp' - for TCP connection, 'unix' - for connection by unix domain socket
       'path'   => '', // Optional. Path to unix domain socket. Uses only if 'scheme' => 'unix'. Example: '/var/run/redis/redis.sock'
+      'nodes'  => false, // Optional. List of cluster nodes. Uses only if 'scheme' => 'cluster'. Example: ['tcp://10.0.0.1', 'tcp://10.0.0.2', 'tcp://10.0.0.3']
 
       // Optional Redis authentication.
       //'auth' => 'redispasswordhere' // Warning: The password is sent in plain-text to the Redis server.

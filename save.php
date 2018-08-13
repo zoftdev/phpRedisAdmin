@@ -19,7 +19,13 @@ require 'includes/header.inc.php';
 // Flush everything so far cause the next command could take some time.
 flush();
 
-$redis->save();
+if ($server['nodes']) {
+  foreach ($redis as $client) {
+    $client->save();
+  }
+} else {
+  $redis->save();
+}
 
 ?>
  done.

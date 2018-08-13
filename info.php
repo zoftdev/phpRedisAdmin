@@ -15,7 +15,19 @@ if (isset($_GET['reset']) && method_exists($redis, 'resetStat')) {
 
 
 // Fetch the info
-$info = $redis->info();
+if ($server['nodes']) {
+  $info = array();
+  $k = 0;
+  foreach ($redis as $client) {
+    $r = $client->info();
+    foreach ($r as $key => $value) {
+      $info[$key.' #'.$k] = $value;
+    }
+    $k++;
+  }
+} else {
+  $info = $redis->info();
+}
 $alt  = false;
 
 

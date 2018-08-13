@@ -7,7 +7,7 @@ require_once 'includes/common.inc.php';
 
 $info = array();
 
-foreach ($config['servers'] as $i => $server) {
+foreach ($config['servers'] as $k => $server) {
   if (!isset($server['db'])) {
       $server['db'] = 0;
   }
@@ -15,6 +15,10 @@ foreach ($config['servers'] as $i => $server) {
   // Setup a connection to Redis.
   if(isset($server['scheme']) && $server['scheme'] === 'unix' && $server['path']) {
     $redis = new Predis\Client(array('scheme' => 'unix', 'path' => $server['path']));
+  } else if(isset($server['scheme']) && $server['scheme'] === 'cluster' && $server['nodes']) {
+    $redis = new Predis\Client($server['nodes'], array('cluster' => 'redis'));
+    $server['db'] = 0;
+    $server['databases'] = 1;
   } else {
     $redis = !$server['port'] ? new Predis\Client($server['host']) : new Predis\Client('tcp://'.$server['host'].':'.$server['port']);
   }
@@ -24,8 +28,10 @@ foreach ($config['servers'] as $i => $server) {
     $redis = false;
   }
 
+  $i = count($info);
   if(!$redis) {
-      $info[$i] = false;
+      $info[$i] = array();
+      $info[$i]['.name'] = isset($server['name']) ? $server['name'] : $server['host'];
   } else {
       if (isset($server['auth'])) {
         if (!$redis->auth($server['auth'])) {
@@ -38,19 +44,20 @@ foreach ($config['servers'] as $i => $server) {
         }
       }
 
-      $info[$i]         = $redis->info();
-      $info[$i]['size'] = $redis->dbSize();
-
-      if (!isset($info[$i]['Server'])) {
-        $info[$i]['Server'] = array(
-          'redis_version'     => $info[$i]['redis_version'],
-          'uptime_in_seconds' => $info[$i]['uptime_in_seconds']
-        );
-      }
-      if (!isset($info[$i]['Memory'])) {
-        $info[$i]['Memory'] = array(
-          'used_memory' => $info[$i]['used_memory']
-        );
+      if ($server['nodes']) {
+        $j = $i;
+        foreach ($redis as $client) {
+          $info[$i]          = $client->info();
+          $info[$i]['.size'] = $client->dbSize();
+          $info[$i]['.name'] = $server['name'].' #'.($i - $j);
+          $info[$i]['.id']   = $k;
+          $i++;
+        }
+      } else {
+         $info[$i]          = $redis->info();
+         $info[$i]['.size'] = $redis->dbSize();
+         $info[$i]['.name'] = isset($server['name']) ? $server['name'] : $server['host'];
+         $info[$i]['.id']   = $k;
       }
   }
 
@@ -67,11 +74,11 @@ require 'includes/header.inc.php';
 
 ?>
 
-<?php foreach ($config['servers'] as $i => $server) { ?>
+<?php for ($i = 0; $i < count($info); $i++) { ?>
   <div class="server">
-  <h2><?php echo isset($server['name']) ? format_html($server['name']) : format_html($server['host'])?></h2>
+  <h2><?php echo format_html($info[$i]['.name']) ?></h2>
 
-  <?php if(!$info[$i]): ?>
+  <?php if(!isset($info[$i]['.id'])): ?>
   <div style="text-align:center;color:red">Server Down</div>
   <?php else: ?>
 
@@ -79,7 +86,7 @@ require 'includes/header.inc.php';
 
   <tr><td><div>Redis version:</div></td><td><div><?php echo $info[$i]['Server']['redis_version']?></div></td></tr>
 
-  <tr><td><div>Keys:</div></td><td><div><?php echo $info[$i]['size']?></div></td></tr>
+  <tr><td><div>Keys:</div></td><td><div><?php echo $info[$i]['.size']?></div></td></tr>
 
   <tr><td><div>Memory used:</div></td><td><div><?php echo format_size($info[$i]['Memory']['used_memory'])?></div></td></tr>
 
@@ -97,7 +104,7 @@ require 'includes/header.inc.php';
            echo 'never';
         } 
     ?> 
-    <a href="save.php?s=<?php echo $i?>"><img src="images/save.png" width="16" height="16" title="Save Now" alt="[S]" class="imgbut"></a></div></td></tr>
+    <a href="save.php?s=<?php echo $info[$i]['.id']?>"><img src="images/save.png" width="16" height="16" title="Save Now" alt="[S]" class="imgbut"></a></div></td></tr>
 
   </table>
   <?php endif; ?>
