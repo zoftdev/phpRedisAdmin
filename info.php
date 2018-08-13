@@ -21,7 +21,7 @@ if ($server['nodes']) {
   foreach ($redis as $client) {
     $r = $client->info();
     foreach ($r as $key => $value) {
-      $info[$key.' #'.$k] = $value;
+      $info[$key."[$k]"] = $value;
     }
     $k++;
   }

@@ -49,7 +49,7 @@ foreach ($config['servers'] as $k => $server) {
         foreach ($redis as $client) {
           $info[$i]          = $client->info();
           $info[$i]['.size'] = $client->dbSize();
-          $info[$i]['.name'] = $server['name'].' #'.($i - $j);
+          $info[$i]['.name'] = $server['name'].'['.($i - $j).']';
           $info[$i]['.id']   = $k;
           $i++;
         }
