@@ -116,14 +116,11 @@ if (isset($values) && ($count_elements_page !== false)) {
 <tr><td><div>Size:</div></td><td><div><?php echo $size?> <?php echo ($type == 'string') ? 'characters' : 'items'?></div></td></tr>
 
 <?php if ($server['nodes']) {
-  $i = 0;
-  $conn = $redis->getConnectionByKey($_GET['key']);
-  foreach ($redis->getConnection() as $node) {
-    if ($conn === $node) break;
-    $i++;
-  }
+  $clients = iterator_to_array($redis->getConnection(), false);
+  usort($clients, strcmp);
+  $k = array_search($redis->getConnectionByKey($_GET['key']), $clients, true);
 ?>
-<tr><td><div>Node:</div></td><td><div><?php echo format_html($server['name']."[$i]")?></div></td></tr>
+<tr><td><div>Node:</div></td><td><div><?php echo format_html($server['name']."[$k]")?></div></td></tr>
 <?php } ?>
 
 </table>

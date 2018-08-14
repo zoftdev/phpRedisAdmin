@@ -7,7 +7,7 @@ require_once 'includes/common.inc.php';
 
 $info = array();
 
-foreach ($config['servers'] as $k => $server) {
+foreach ($config['servers'] as $j => $server) {
   if (!isset($server['db'])) {
       $server['db'] = 0;
   }
@@ -45,19 +45,20 @@ foreach ($config['servers'] as $k => $server) {
       }
 
       if ($server['nodes']) {
-        $j = $i;
-        foreach ($redis as $client) {
+        $clients = iterator_to_array($redis, false);
+        usort($clients, function ($a, $b) { return strcmp($a->getConnection(), $b->getConnection()); });
+        foreach ($clients as $k => $client) {
           $info[$i]          = $client->info();
           $info[$i]['.size'] = $client->dbSize();
-          $info[$i]['.name'] = $server['name'].'['.($i - $j).']';
-          $info[$i]['.id']   = $k;
+          $info[$i]['.name'] = $server['name']."[$k]";
+          $info[$i]['.id']   = $j;
           $i++;
         }
       } else {
          $info[$i]          = $redis->info();
          $info[$i]['.size'] = $redis->dbSize();
          $info[$i]['.name'] = isset($server['name']) ? $server['name'] : $server['host'];
-         $info[$i]['.id']   = $k;
+         $info[$i]['.id']   = $j;
       }
   }
 
