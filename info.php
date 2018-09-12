@@ -15,7 +15,7 @@ if (isset($_GET['reset']) && method_exists($redis, 'resetStat')) {
 
 
 // Fetch the info
-if ($server['nodes']) {
+if (!empty($server['nodes'])) {
   $info = array();
   $clients = iterator_to_array($redis, false);
   usort($clients, function ($a, $b) { return strcmp($a->getConnection(), $b->getConnection()); });

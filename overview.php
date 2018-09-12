@@ -15,7 +15,7 @@ foreach ($config['servers'] as $j => $server) {
   // Setup a connection to Redis.
   if(isset($server['scheme']) && $server['scheme'] === 'unix' && $server['path']) {
     $redis = new Predis\Client(array('scheme' => 'unix', 'path' => $server['path']));
-  } else if(isset($server['scheme']) && $server['scheme'] === 'cluster' && $server['nodes']) {
+  } else if(isset($server['scheme']) && $server['scheme'] === 'cluster' && !empty($server['nodes'])) {
     $redis = new Predis\Client($server['nodes'], array('cluster' => 'redis'));
     $server['db'] = 0;
     $server['databases'] = 1;
@@ -44,7 +44,7 @@ foreach ($config['servers'] as $j => $server) {
         }
       }
 
-      if ($server['nodes']) {
+      if (!empty($server['nodes'])) {
         $clients = iterator_to_array($redis, false);
         usort($clients, function ($a, $b) { return strcmp($a->getConnection(), $b->getConnection()); });
         foreach ($clients as $k => $client) {

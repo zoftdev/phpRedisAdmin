@@ -129,7 +129,7 @@ if (isset($_POST['type'])) {
     if (isset($_GET['key'])) {
       echo json_encode(export_json($_GET['key']));
     } else { // All keys
-      if ($server['nodes']) {
+      if (!empty($server['nodes'])) {
         $keys = array();
         foreach ($redis as $client) {
           $r = $client->keys('*');
@@ -167,7 +167,7 @@ if (isset($_POST['type'])) {
       export_redis($_GET['key']);
     } else { // All keys
       $keys = $redis->keys('*');
-      if ($server['nodes']) {
+      if (!empty($server['nodes'])) {
         $keys = array();
         foreach ($redis as $client) {
           $r = $client->keys('*');

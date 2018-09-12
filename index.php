@@ -6,7 +6,7 @@ if($redis) {
 
     if (!empty($server['keys'])) {
         $keys = $redis->keys($server['filter']);
-    } else if ($server['nodes']) {
+    } else if (!empty($server['nodes'])) {
         $keys = array();
 
         foreach ($redis as $client) {

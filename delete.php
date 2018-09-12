@@ -51,7 +51,7 @@ if (isset($_GET['key'])) {
 
 
 if (isset($_GET['tree'])) {
-  if ($server['nodes']) {
+  if (!empty($server['nodes'])) {
     $keys = array();
     foreach ($redis as $client) {
       $r = $client->keys($_GET['tree'].'*');
